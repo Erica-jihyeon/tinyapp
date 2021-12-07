@@ -9,9 +9,12 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//use bodyParser to handle post request
 app.use(bodyParser.urlencoded({extended: true}));
+
 //set the view engine to ejs
 app.set("view engine", "ejs");
+
 
 
 app.get("/", (req, res) => {
@@ -36,16 +39,36 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[this.shortURL] }
-  res.render("urls_show", templateVars);
+  const shortURL = req.params.shortURL;
+  if (shortURL.length === 7) {
+    const templateVars = { shortURL: shortURL.slice(1), longURL: urlDatabase[shortURL.slice(1)] }
+    res.render("urls_show", templateVars);
+  } else {
+    const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }
+    res.render("urls_show", templateVars);
+    }
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
+  //console.log(req.body);
+  //add new key-value into urlDatabase
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/:${shortURL}`);
 });
 
-
+//test input ex> https://www.naver.com, https:// need!!!
+app.get("/u/:shortURL", (req, res) => {
+  if (req.params.shortURL.length === 7) {
+    const longURL = urlDatabase[req.params.shortURL.slice(1)];
+    //console.log(longURL)
+    res.redirect(`${longURL}`);
+  } else {
+  const longURL = urlDatabase[req.params.shortURL];
+  //console.log(longURL)
+  res.redirect(`${longURL}`);
+  }
+})
 
 
 app.listen(PORT, () => {
