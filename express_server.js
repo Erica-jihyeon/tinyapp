@@ -40,13 +40,9 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (shortURL.length === 7) {
-    const templateVars = { shortURL: shortURL.slice(1), longURL: urlDatabase[shortURL.slice(1)] }
-    res.render("urls_show", templateVars);
-  } else {
-    const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }
-    res.render("urls_show", templateVars);
-    }
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }
+  res.render("urls_show", templateVars);
+
 });
 
 app.post("/urls", (req, res) => {
@@ -54,20 +50,14 @@ app.post("/urls", (req, res) => {
   //add new key-value into urlDatabase
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/:${shortURL}`);
+  res.redirect(`/urls/${shortURL}`);
 });
 
 //test input ex> https://www.naver.com, https:// need!!!
 app.get("/u/:shortURL", (req, res) => {
-  if (req.params.shortURL.length === 7) {
-    const longURL = urlDatabase[req.params.shortURL.slice(1)];
-    //console.log(longURL)
-    res.redirect(`${longURL}`);
-  } else {
   const longURL = urlDatabase[req.params.shortURL];
   //console.log(longURL)
   res.redirect(`${longURL}`);
-  }
 })
 
 
