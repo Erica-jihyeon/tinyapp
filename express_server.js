@@ -15,12 +15,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "1234"
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "123"
   }
 }
 
@@ -47,7 +47,7 @@ app.get("/urls", (req, res) => {
 
 /** login */
 app.post("/login", (req, res) => {
-  //res.cookie('user_id', req.body.username);
+  //res.cookie('username', req.body.username);
   res.redirect("/urls");
 });
 
@@ -67,14 +67,23 @@ app.get("/register", (req, res) => {
 })
 
 app.post("/register/", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if(!email || !password) return res.status(400).send("email and password should not be blank!");
+
+  const user = findUserByEmail(email);
+  if(user) return res.status(400).send("You've already registered. Please log in.")
+
   const userID = generateRandomString();
   users[userID] = {
     id: userID,
-    email: req.body.email,
-    newPwd: req.body.password
+    email,
+    password
   }
   res.cookie('user_id', userID);
   res.redirect("/urls");
+  console.log(users);
 })
 
 
@@ -149,3 +158,10 @@ function generateRandomString() {
   }
   return randomString.join('');
 };
+
+function findUserByEmail(email) {
+  for (const user in users) {
+    if (users[user].email === email) return user;
+  }
+  return null;
+}
