@@ -60,6 +60,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+/** edit URL */
+app.post("/urls/:id", (req, res) => {
+  const newLongURL = req.body.longURL;
+  const shortURL = req.params.id;
+  urlDatabase[shortURL] = newLongURL;
+  res.redirect("/urls");
+})
+
 /** short URL result & hyperlink */
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
