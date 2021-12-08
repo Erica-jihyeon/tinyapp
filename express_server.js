@@ -62,9 +62,9 @@ app.post("/login", (req, res) => {
 
   const user = findUserByEmail(email);
 
-  if(!user) return res.status(400).send("A user with that email doesn't exist");
+  if(!user) return res.status(403).send("A user with that email doesn't exist");
   if(user.password !== password) {
-    return res.status(400).send("Your password is incorrect.")
+    return res.status(403).send("Your password is incorrect.")
   }
   res.cookie("user_id", user.id)
   res.redirect("/urls");
