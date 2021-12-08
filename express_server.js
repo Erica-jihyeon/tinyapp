@@ -1,6 +1,7 @@
 const { request } = require('express');
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 
@@ -13,6 +14,7 @@ const urlDatabase = {
 /** MIDDLEWARE */
 //use bodyParser to handle post request
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 /** TEMPLATE */
 //set the view engine to ejs
@@ -35,13 +37,33 @@ app.get("/hello", (req, res) => {
 /** ROUTE */
 /** main page */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render("urls_index", templateVars);
 });
 
+
+/** login */
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+/** logout */
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
+})
+
+
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -52,6 +74,7 @@ app.post("/urls", (req, res) => {
   //res.redirect('path'), don't use ':'
   res.redirect(`/urls/${shortURL}`);
 });
+
 
 /** delete URL */
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -68,10 +91,17 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 })
 
+
+
+
 /** short URL result & hyperlink */
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL],
+    username: req.cookies["username"]
+  }
   res.render("urls_show", templateVars);
 });
 
@@ -82,8 +112,6 @@ app.get("/u/:shortURL", (req, res) => {
   //console.log(longURL)
   res.redirect(`${longURL}`);
 });
-
-
 
 
 
