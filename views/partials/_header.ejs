@@ -16,8 +16,10 @@
         <button type="submit" class="btn btn-outline-dark" style="margin: 4px 4px; text-align: center;">Logout</button>
       </form>
     <% } else { %> 
-      <form method="POST" action="/login">
-        <input name="username" style="width: 150px; border: 0px; margin: 4px; padding: 4px 5px 7px; border-radius: 3px; text-align: left;">
+      <form method="GET" action="/register">
+        <button type="submit" class="btn btn-outline-dark" style="margin: 4px 4px; text-align: center;">Register</button>
+      </form>
+      <form method="GET" action="/login">
         <button type="submit" class="btn btn-outline-dark" style="margin: 4px 4px; text-align: center;">Login</button>
       </form>
   <% } %>

@@ -46,8 +46,27 @@ app.get("/urls", (req, res) => {
 });
 
 /** login */
+app.get("/login", (req, res) => {
+  const templateVars = {
+    users,
+    userID: req.cookies["user_id"],
+  };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  //res.cookie('username', req.body.username);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if(!email || !password) return res.status(400).send("email and password should not be blank!");
+
+  const user = findUserByEmail(email);
+
+  if(!user) return res.status(400).send("A user with that email doesn't exist");
+  if(user.password !== password) {
+    return res.status(400).send("Your password is incorrect.")
+  }
+  res.cookie("user_id", user.id)
   res.redirect("/urls");
 });
 
@@ -83,7 +102,6 @@ app.post("/register/", (req, res) => {
   }
   res.cookie('user_id', userID);
   res.redirect("/urls");
-  console.log(users);
 })
 
 
@@ -161,7 +179,7 @@ function generateRandomString() {
 
 function findUserByEmail(email) {
   for (const user in users) {
-    if (users[user].email === email) return user;
+    if (users[user].email === email) return users[user];
   }
   return null;
 }
