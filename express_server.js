@@ -1,6 +1,7 @@
 const { request } = require('express');
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 
@@ -13,6 +14,7 @@ const urlDatabase = {
 /** MIDDLEWARE */
 //use bodyParser to handle post request
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 /** TEMPLATE */
 //set the view engine to ejs
