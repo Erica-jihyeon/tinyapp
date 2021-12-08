@@ -21,19 +21,6 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 
 
-/** TEST */
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 /** ROUTE */
 /** main page */
 app.get("/urls", (req, res) => {
@@ -44,6 +31,17 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+/** register */
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("register", templateVars);
+})
+
+app.post("/register/", (req, res) => {
+  res.redirect("/urls");
+})
 
 /** login */
 app.post("/login", (req, res) => {
