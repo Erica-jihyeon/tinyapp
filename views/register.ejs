@@ -11,23 +11,20 @@
 </header>
 
 <body>
-  <div class="card text-center">
-      <div class="card-header">
-        <h4 style="margin-left: 80px;">Register</h4>
-        <form method="POST" action="/register">
-          <div>
-            <label for="email" style="padding-right: 15px;">email</label>
-            <input type="email" name="email" style="margin-left: 20px;">
-          </div>
-          <div>
-            <label for="password" style="padding-right: 5px;">password</label>
-            <input type="password" name="password">
-          </div>
-          <button type="submit" class="btn btn-primary" style="margin-left: 180px;">Register</button>
-        </form>
-      </div>
-    <div class="card-footer text-muted"></div>
-  </div>
+  <h3 style="margin-top: 20px; margin-left: 10px;text-align: left;">Create Account</h3>
+  <form method="POST" action="/register">
+    <div>
+      <label for="email" style="margin-left: 10px;">Email address</label>
+      <br>
+      <input type="email" name="email" style="margin-left: 10px;" placeholder="Enter email">
+    </div>
+    <div>
+      <label for="password" style="margin-left: 10px; margin-top: 15px;">Password</label>
+      <br>
+      <input type="password" name="password" style="margin-left: 10px;" placeholder="Password">
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-left: 10px; margin-top: 15px">Register</button>
+  </form>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

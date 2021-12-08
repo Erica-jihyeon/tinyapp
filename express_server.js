@@ -35,6 +35,16 @@ app.set("view engine", "ejs");
 
 
 /** ROUTE */
+/** default page */
+app.get("/", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if(userID) {
+    res.redirect("/urls");
+    return;
+  }
+  res.redirect("/login");
+});
+
 /** main page */
 app.get("/urls", (req, res) => {
   const templateVars = {
