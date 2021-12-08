@@ -38,11 +38,7 @@ app.set("view engine", "ejs");
 /** default page */
 app.get("/", (req, res) => {
   const userID = req.cookies["user_id"];
-  if(userID) {
-    res.redirect("/urls");
-    return;
-  }
-  res.redirect("/login");
+  return userID ? res.redirect("/urls") : res.redirect("/login")
 });
 
 /** main page */
@@ -148,8 +144,6 @@ app.post("/urls/:id", (req, res) => {
 })
 
 
-
-
 /** short URL result & hyperlink */
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -166,7 +160,6 @@ app.get("/urls/:shortURL", (req, res) => {
 //test input ex> https://www.naver.com, https:// need!!!
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  //console.log(longURL)
   res.redirect(`${longURL}`);
 });
 
