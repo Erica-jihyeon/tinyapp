@@ -41,6 +41,12 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+/** login */
+app.post("/urls", (req, res) => {
+  const userName = req.body.username;
+
+});
+
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -61,6 +67,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
+
+/** edit URL */
+app.post("/urls/:id", (req, res) => {
+  const newLongURL = req.body.longURL;
+  const shortURL = req.params.id;
+  urlDatabase[shortURL] = newLongURL;
+  res.redirect("/urls");
+})
 
 /** short URL result & hyperlink */
 app.get("/urls/:shortURL", (req, res) => {
