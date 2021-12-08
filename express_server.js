@@ -11,6 +11,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 /** MIDDLEWARE */
 //use bodyParser to handle post request
 app.use(bodyParser.urlencoded({extended: true}));
@@ -25,51 +38,59 @@ app.set("view engine", "ejs");
 /** main page */
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    users,
+    userID: req.cookies["user_id"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
 
-/** register */
-app.get("/register", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
-  res.render("register", templateVars);
-})
-
-app.post("/register/", (req, res) => {
-  res.redirect("/urls");
-})
-
 /** login */
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  //res.cookie('user_id', req.body.username);
   res.redirect("/urls");
 });
 
 /** logout */
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 })
+
+/** register */
+app.get("/register", (req, res) => {
+  const templateVars = {
+    users,
+    userID: req.cookies["user_id"],
+  };
+  res.render("register", templateVars);
+})
+
+app.post("/register/", (req, res) => {
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    newPwd: req.body.password
+  }
+  res.cookie('user_id', userID);
+  res.redirect("/urls");
+})
+
 
 
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    users,
+    userID: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body);
-  //add new key-value into urlDatabase
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  //res.redirect('path'), don't use ':'
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -98,7 +119,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL],
-    username: req.cookies["username"]
+    users,
+    userID: req.cookies["user_id"]
   }
   res.render("urls_show", templateVars);
 });
