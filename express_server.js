@@ -37,19 +37,33 @@ app.get("/hello", (req, res) => {
 /** ROUTE */
 /** main page */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render("urls_index", templateVars);
 });
 
-/** login */
-app.post("/urls", (req, res) => {
-  const userName = req.body.username;
 
+/** login */
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
 });
+
+/** logout */
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
+})
+
 
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -61,12 +75,14 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+
 /** delete URL */
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
+
 
 /** edit URL */
 app.post("/urls/:id", (req, res) => {
@@ -76,10 +92,17 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 })
 
+
+
+
 /** short URL result & hyperlink */
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL],
+    username: req.cookies["username"]
+  }
   res.render("urls_show", templateVars);
 });
 
@@ -90,8 +113,6 @@ app.get("/u/:shortURL", (req, res) => {
   //console.log(longURL)
   res.redirect(`${longURL}`);
 });
-
-
 
 
 
