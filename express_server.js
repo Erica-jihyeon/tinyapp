@@ -172,6 +172,9 @@ app.get("/urls/:shortURL", (req, res) => {
 /** redirect to longURL */
 //test input ex> https://www.naver.com, https:// need!!!
 app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if (!findDataByShortURL(shortURL)) return res.status(400).send("Invalid URL");
+
   const longURL = urlDatabase[req.params.shortURL].longURL;/////////
   res.redirect(`${longURL}`);
 });
@@ -198,4 +201,11 @@ function findUserByEmail(email) {
     if (users[user].email === email) return users[user];
   }
   return null;
-}
+};
+
+function findDataByShortURL(shortURL) {
+  for (const key in urlDatabase) {
+    if (key === shortURL) return shortURL;
+  }
+  return null;
+};
