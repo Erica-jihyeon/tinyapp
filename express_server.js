@@ -47,12 +47,16 @@ app.get("/", (req, res) => {
   return userID ? res.redirect("/urls") : res.redirect("/login")
 });
 
-/** main page */
+/** url list page */
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID) return res.status(403).send("You're not authorized. Please Login or Register first.");
+
+  const urls = getDataByUserID(userID);
   const templateVars = {
     users,
-    userID: req.cookies["user_id"],
-    urls: urlDatabase
+    userID,
+    urls
   };
   res.render("urls_index", templateVars);
 });
@@ -136,32 +140,44 @@ app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: userID};///////
-  console.log(urlDatabase);///////
   res.redirect(`/urls/${shortURL}`);
 });
 
 
 /** delete URL */
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
+  const userID = req.cookies["user_id"];
+  const shortURL = req.params.shortURL
+  if (!userID || !checkDataAutorized(userID, shortURL)) {
+    return res.status(403).send("You're not authorized to access this.");
+  }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
 /** edit URL */
 app.post("/urls/:id", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID || !checkDataAutorized(userID, req.params.id)) {
+    return res.status(403).send("You're not authorized to access this.");
+  }
+
   const newLongURL = req.body.longURL;
   const shortURL = req.params.id;
   urlDatabase[shortURL].longURL = newLongURL;///////
   res.redirect("/urls");
 })
 
-
 /** short URL result & hyperlink */
-app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
+app.get("/urls/:id", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID || !checkDataAutorized(userID, req.params.id)) {
+    return res.status(403).send("You're not authorized to access this.");
+  }
+
+  const shortURL = req.params.id;
   const templateVars = {
-    shortURL: shortURL,
+    shortURL,
     longURL: urlDatabase[shortURL].longURL,
     users,
     userID: req.cookies["user_id"]
@@ -169,11 +185,13 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
+
 /** redirect to longURL */
 //test input ex> https://www.naver.com, https:// need!!!
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (!findDataByShortURL(shortURL)) return res.status(400).send("Invalid URL");
+  if (!checkValidShortURL(shortURL)) return res.status(400).send("Invalid URL");
 
   const longURL = urlDatabase[req.params.shortURL].longURL;/////////
   res.redirect(`${longURL}`);
@@ -203,9 +221,28 @@ function findUserByEmail(email) {
   return null;
 };
 
-function findDataByShortURL(shortURL) {
+function checkValidShortURL(shortURL) {
   for (const key in urlDatabase) {
     if (key === shortURL) return shortURL;
   }
   return null;
+};
+
+function getDataByUserID(userID) {
+  const result = {}
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === userID) {
+      result[shortURL] = {};
+      result[shortURL].longURL = urlDatabase[shortURL].longURL;
+      result[shortURL].userID = userID;
+    }
+  }
+  return result;
+}
+
+function checkDataAutorized(userID, id) {
+
+  if (urlDatabase[id].userID === userID) return true;
+  return false;
+
 };
