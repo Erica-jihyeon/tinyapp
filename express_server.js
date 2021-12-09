@@ -73,6 +73,9 @@ app.get("/urls", (req, res) => {
 
 /** login */
 app.get("/login", (req, res) => {
+  const loggedin = req.session.user_id;
+  if (loggedin) return res.redirect('/urls');
+
   const templateVars = {
     users,
     userID: req.session.user_id,
@@ -91,7 +94,7 @@ app.post("/login", (req, res) => {
 
   const passwordMatching = bcrypt.compareSync(password, user.password);
   if(!passwordMatching) return res.status(403).send("Your password is incorrect.");
-
+  
   req.session.user_id = user.id;
   res.redirect("/urls");
 });
@@ -117,16 +120,19 @@ app.get("/register", (req, res) => {
 app.post("/register/", (req, res) => {
   const { email } = req.body;
   // const email = req.body.email;
-  const password = bcrypt.hashSync(req.body.password, saltRounds);////////
+  const plainPwd = req.body.password;
 
-  if(!email || !password) return res.status(400).send("email and password should not be blank!");
+  if(!plainPwd) return res.status(400).send("password should not be blank!");
+  
+  const password = bcrypt.hashSync(plainPwd, saltRounds);
+
+  if(!email) return res.status(400).send("email should not be blank!");
   
   const user = getUserByEmail(email, users);
   if(user) return res.status(400).send("You've already registered. Please log in.");
 
   const userID = addUserReturnID(email, password);
   
-  //console.log(users); //test
   req.session.user_id = userID;
   res.redirect("/urls");
 })
