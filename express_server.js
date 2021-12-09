@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcryptjs');
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 const saltRounds = 10;
@@ -36,6 +37,10 @@ const users = {
 //use bodyParser to handle post request
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['this is the key', 'key2']
+}));
 
 /** TEMPLATE */
 //set the view engine to ejs
@@ -45,13 +50,13 @@ app.set("view engine", "ejs");
 /** ROUTE */
 /** default page */
 app.get("/", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   return userID ? res.redirect("/urls") : res.redirect("/login")
 });
 
 /** url list page */
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!userID) return res.status(403).send("You're not authorized. Please Login or Register first.");
 
   const urls = getDataByUserID(userID);
@@ -67,7 +72,7 @@ app.get("/urls", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = {
     users,
-    userID: req.cookies["user_id"],
+    userID: req.session.user_id,
   };
   res.render("login", templateVars);
 });
@@ -84,19 +89,19 @@ app.post("/login", (req, res) => {
   const passwordMatching = bcrypt.compareSync(password, user.password);
   if(!passwordMatching) return res.status(403).send("Your password is incorrect.");
 
-  res.cookie("user_id", user.id)
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
 /** logout */
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session.user_id = null;
   res.redirect("/urls");
 })
 
 /** register */
 app.get("/register", (req, res) => {
-  const userID = req.cookies["user_id"]
+  const userID = req.session.user_id
   if (userID) return res.redirect("/urls");
   
   const templateVars = {
@@ -119,7 +124,7 @@ app.post("/register/", (req, res) => {
   const userID = addUserReturnID(email, password);
   
   //console.log(users); //test
-  res.cookie('user_id', userID);
+  req.session.user_id = userID;
   res.redirect("/urls");
 })
 
@@ -127,7 +132,7 @@ app.post("/register/", (req, res) => {
 
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!userID) return res.redirect("/login");
 
   const templateVars = {
@@ -138,7 +143,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!userID) return res.status(403).send("You're not authorized.")
 
   const shortURL = generateRandomString();
@@ -149,7 +154,7 @@ app.post("/urls", (req, res) => {
 
 /** delete URL */
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (!userID) return res.status(403).send("You're not authorized. Please login or register first.");
   if (!checkDataAutorized(userID, shortURL)) {
@@ -163,7 +168,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 /** edit URL */
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!userID) return res.status(403).send("You're not authorized. Please login or register first.");
   if (!checkDataAutorized(userID, shortURL)) {
     return res.status(403).send("You're not authorized to access this.");
@@ -177,7 +182,7 @@ app.post("/urls/:id", (req, res) => {
 /** short URL result & hyperlink */
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
 
   if (!checkValidShortURL(shortURL)) return res.status(403).send("Invalid URL");
 
@@ -190,7 +195,7 @@ app.get("/urls/:id", (req, res) => {
     shortURL,
     longURL: urlDatabase[shortURL].longURL,
     users,
-    userID: req.cookies["user_id"]
+    userID
   }
   res.render("urls_show", templateVars);
 });
