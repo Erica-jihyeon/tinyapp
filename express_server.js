@@ -7,18 +7,24 @@ const PORT = 8080;
 
 /** DATABASE */
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "user1"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2"
+  }
 };
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
+  "user1": {
+    id: "user1", 
     email: "user@example.com", 
     password: "1234"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
+ "user2": {
+    id: "user2", 
     email: "user2@example.com", 
     password: "123"
   }
@@ -116,7 +122,7 @@ app.post("/register/", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies["user_id"];
   if (!userID) return res.redirect("/login");
-  
+
   const templateVars = {
     users,
     userID
@@ -129,7 +135,8 @@ app.post("/urls", (req, res) => {
   if (!userID) return res.status(403).send("You're not authorized.")
 
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: userID};///////
+  console.log(urlDatabase);///////
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -145,7 +152,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const newLongURL = req.body.longURL;
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = newLongURL;
+  urlDatabase[shortURL].longURL = newLongURL;///////
   res.redirect("/urls");
 })
 
@@ -155,7 +162,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL],
+    longURL: urlDatabase[shortURL].longURL,
     users,
     userID: req.cookies["user_id"]
   }
@@ -165,7 +172,7 @@ app.get("/urls/:shortURL", (req, res) => {
 /** redirect to longURL */
 //test input ex> https://www.naver.com, https:// need!!!
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;/////////
   res.redirect(`${longURL}`);
 });
 
