@@ -8,6 +8,9 @@ const app = express();
 const PORT = 8080;
 const saltRounds = 10;
 
+/** Require helper func */
+const { getUserByEmail } = require('./helpers');
+
 /** DATABASE */
 const urlDatabase = {
   "b2xVn2": {
@@ -227,15 +230,6 @@ function generateRandomString() {
     randomString.push(letters[Math.floor(Math.random() * letters.length)]);
   }
   return randomString.join('');
-};
-
-
-function getUserByEmail(email, database) {
-  
-  for (const user in database) {
-    if (database[user].email === email) return database[user];
-  }
-  return false;
 };
 
 /* check validation of shortURL */
