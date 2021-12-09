@@ -2,8 +2,10 @@ const { request } = require('express');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
+const saltRounds = 10;
 
 /** DATABASE */
 const urlDatabase = {
@@ -21,12 +23,12 @@ const users = {
   "user1": {
     id: "user1", 
     email: "user@example.com", 
-    password: "1234"
+    password: bcrypt.hashSync("1234", saltRounds)
   },
  "user2": {
     id: "user2", 
     email: "user2@example.com", 
-    password: "123"
+    password: bcrypt.hashSync("123", saltRounds)
   }
 }
 
@@ -76,12 +78,12 @@ app.post("/login", (req, res) => {
 
   if(!email || !password) return res.status(400).send("email and password should not be blank!");
 
-  const user = findUserByEmail(email);
-
+  const user = getUserByEmail(email, users);
   if(!user) return res.status(403).send("A user with that email doesn't exist");
-  if(user.password !== password) {
-    return res.status(403).send("Your password is incorrect.")
-  }
+
+  const passwordMatching = bcrypt.compareSync(password, user.password);
+  if(!passwordMatching) return res.status(403).send("Your password is incorrect.");
+
   res.cookie("user_id", user.id)
   res.redirect("/urls");
 });
@@ -105,20 +107,18 @@ app.get("/register", (req, res) => {
 })
 
 app.post("/register/", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
+  const { email } = req.body;
+  // const email = req.body.email;
+  const password = bcrypt.hashSync(req.body.password, saltRounds);////////
 
   if(!email || !password) return res.status(400).send("email and password should not be blank!");
+  
+  const user = getUserByEmail(email, users);
+  if(user) return res.status(400).send("You've already registered. Please log in.");
 
-  const user = findUserByEmail(email);
-  if(user) return res.status(400).send("You've already registered. Please log in.")
-
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email,
-    password
-  }
+  const userID = addUserReturnID(email, password);
+  
+  //console.log(users); //test
   res.cookie('user_id', userID);
   res.redirect("/urls");
 })
@@ -224,13 +224,16 @@ function generateRandomString() {
   return randomString.join('');
 };
 
-function findUserByEmail(email) {
+
+function getUserByEmail(email, database) {
+  
   for (const user in users) {
     if (users[user].email === email) return users[user];
   }
-  return null;
+  return false;
 };
 
+/* check validation of shortURL */
 function checkValidShortURL(shortURL) {
   for (const key in urlDatabase) {
     if (key === shortURL) return shortURL;
@@ -238,6 +241,7 @@ function checkValidShortURL(shortURL) {
   return null;
 };
 
+/* data filtering by user */
 function getDataByUserID(userID) {
   const result = {}
   for (const shortURL in urlDatabase) {
@@ -250,9 +254,22 @@ function getDataByUserID(userID) {
   return result;
 }
 
+/*check if data is the user's data*/
 function checkDataAutorized(userID, id) {
 
   if (urlDatabase[id].userID === userID) return true;
   return false;
 
 };
+
+/* add a new user */
+function addUserReturnID(email, password) {
+  const userID = generateRandomString();
+
+  users[userID] = {
+    id: userID,
+    email,
+    password
+  };
+  return userID;
+}
