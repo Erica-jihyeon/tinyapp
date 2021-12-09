@@ -114,14 +114,20 @@ app.post("/register/", (req, res) => {
 
 /** add a new URL */
 app.get("/urls/new", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID) return res.redirect("/login");
+  
   const templateVars = {
     users,
-    userID: req.cookies["user_id"]
+    userID
   };
   res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID) return res.status(403).send("You're not authorized.")
+
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
