@@ -23,18 +23,18 @@ const urlDatabase = {
   }
 };
 
-const users = { 
+const users = {
   "user1": {
-    id: "user1", 
-    email: "user@example.com", 
+    id: "user1",
+    email: "user@example.com",
     password: bcrypt.hashSync("1234", saltRounds)
   },
- "user2": {
-    id: "user2", 
-    email: "user2@example.com", 
+  "user2": {
+    id: "user2",
+    email: "user2@example.com",
     password: bcrypt.hashSync("123", saltRounds)
   }
-}
+};
 
 /** MIDDLEWARE */
 //use bodyParser to handle post request
@@ -54,7 +54,7 @@ app.set("view engine", "ejs");
 /** default page */
 app.get("/", (req, res) => {
   const userID = req.session.user_id;
-  return userID ? res.redirect("/urls") : res.redirect("/login")
+  return userID ? res.redirect("/urls") : res.redirect("/login");
 });
 
 /** url list page */
@@ -87,13 +87,13 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if(!email || !password) return res.status(400).send("email and password should not be blank!");
+  if (!email || !password) return res.status(400).send("email and password should not be blank!");
 
   const user = getUserByEmail(email, users);
-  if(!user) return res.status(403).send("A user with that email doesn't exist");
+  if (!user) return res.status(403).send("A user with that email doesn't exist");
 
   const passwordMatching = bcrypt.compareSync(password, user.password);
-  if(!passwordMatching) return res.status(403).send("Your password is incorrect.");
+  if (!passwordMatching) return res.status(403).send("Your password is incorrect.");
   
   req.session.user_id = user.id;
   res.redirect("/urls");
@@ -103,11 +103,11 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.user_id = null;
   res.redirect("/urls");
-})
+});
 
 /** register */
 app.get("/register", (req, res) => {
-  const userID = req.session.user_id
+  const userID = req.session.user_id;
   if (userID) return res.redirect("/urls");
   
   const templateVars = {
@@ -115,27 +115,27 @@ app.get("/register", (req, res) => {
     userID
   };
   res.render("register", templateVars);
-})
+});
 
 app.post("/register/", (req, res) => {
   const { email } = req.body;
   // const email = req.body.email;
   const plainPwd = req.body.password;
 
-  if(!plainPwd) return res.status(400).send("password should not be blank!");
+  if (!plainPwd) return res.status(400).send("password should not be blank!");
   
   const password = bcrypt.hashSync(plainPwd, saltRounds);
 
-  if(!email) return res.status(400).send("email should not be blank!");
+  if (!email) return res.status(400).send("email should not be blank!");
   
   const user = getUserByEmail(email, users);
-  if(user) return res.status(400).send("You've already registered. Please log in.");
+  if (user) return res.status(400).send("You've already registered. Please log in.");
 
   const userID = addUserReturnID(email, password);
   
   req.session.user_id = userID;
   res.redirect("/urls");
-})
+});
 
 
 
@@ -153,7 +153,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const userID = req.session.user_id;
-  if (!userID) return res.status(403).send("You're not authorized.")
+  if (!userID) return res.status(403).send("You're not authorized.");
 
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: userID};
@@ -168,7 +168,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (!userID) return res.status(403).send("You're not authorized. Please login or register first.");
   if (!checkDataAutorized(userID, shortURL)) {
     return res.status(403).send("You're not authorized to access this.");
-  };
+  }
 
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -181,12 +181,12 @@ app.post("/urls/:id", (req, res) => {
   if (!userID) return res.status(403).send("You're not authorized. Please login or register first.");
   if (!checkDataAutorized(userID, shortURL)) {
     return res.status(403).send("You're not authorized to access this.");
-  };
+  }
 
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL].longURL = newLongURL;
   res.redirect("/urls");
-})
+});
 
 /** short URL result & hyperlink */
 app.get("/urls/:id", (req, res) => {
@@ -198,14 +198,14 @@ app.get("/urls/:id", (req, res) => {
   if (!userID) return res.status(403).send("You're not authorized. Please login or register first.");
   if (!checkDataAutorized(userID, shortURL)) {
     return res.status(403).send("You're not authorized to access this.");
-  };
+  }
 
   const templateVars = {
     shortURL,
     longURL: urlDatabase[shortURL].longURL,
     users,
     userID
-  }
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -229,7 +229,7 @@ app.listen(PORT, () => {
 });
 
 /** FUNCTION */
-function generateRandomString() {
+const generateRandomString = function() {
   let randomString = [];
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 6; i++) {
@@ -239,7 +239,7 @@ function generateRandomString() {
 };
 
 /* check validation of shortURL */
-function checkValidShortURL(shortURL) {
+const checkValidShortURL = function(shortURL) {
   for (const key in urlDatabase) {
     if (key === shortURL) return shortURL;
   }
@@ -247,8 +247,8 @@ function checkValidShortURL(shortURL) {
 };
 
 /* data filtering by user */
-function getDataByUserID(userID) {
-  const result = {}
+const getDataByUserID = function(userID) {
+  const result = {};
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === userID) {
       result[shortURL] = {};
@@ -257,18 +257,16 @@ function getDataByUserID(userID) {
     }
   }
   return result;
-}
+};
 
 /*check if data is the user's data*/
-function checkDataAutorized(userID, id) {
-
+const checkDataAutorized = function(userID, id) {
   if (urlDatabase[id].userID === userID) return true;
   return false;
-
 };
 
 /* add a new user */
-function addUserReturnID(email, password) {
+const addUserReturnID = function(email, password) {
   const userID = generateRandomString();
 
   users[userID] = {
@@ -277,4 +275,4 @@ function addUserReturnID(email, password) {
     password
   };
   return userID;
-}
+};
